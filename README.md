@@ -1,7 +1,10 @@
 # MEMGC
-simple garbage collector
+Simple C++ garbage collector
+
 It's a garbage collector that will free memory that allocated.
+
 How to use:
+
 1, #include "memgc.hpp"
 
 2, allocate memory with ```alloc<yourType>(yourArguments)```;
