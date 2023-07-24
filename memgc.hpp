@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _GARBAGE_COLLECTOR_
 #define _GARBAGE_COLLECTOR_
 #include <cstdlib>
@@ -7,53 +8,60 @@
 #include <atomic>
 #include <iostream>
 #include <type_traits>
-class _GC
+class MEMGC
 {
 	friend class _GC_C;
 	template<class T, class... Args> friend auto* alloc(Args... args);
 	std::vector<std::pair<int,void*>> ptr_array;
-	explicit _GC() = default;
-	explicit _GC(const _GC&) = delete;
+	explicit MEMGC() = default;
+	explicit MEMGC(const MEMGC&) = delete;
 	static std::recursive_mutex m_lock;
-	static volatile std::atomic<_GC*> a_instance;
+	static volatile std::atomic<MEMGC*> a_instance;
+	static std::once_flag flag;
+	static void initInst();
 	class _GC_C
 	{
-		friend class _GC;
+		friend class MEMGC;
 		explicit _GC_C() = default;
 		explicit _GC_C(const _GC_C&) = delete;
 		~_GC_C() {
-			if (_GC::getInstance() != nullptr) {
-				std::lock_guard<std::recursive_mutex> locker(_GC::m_lock);
-				if (_GC::a_instance.load() != nullptr) {
-					delete _GC::a_instance.load();
-					_GC::a_instance.store(nullptr);
+			if (MEMGC::getInstance() != nullptr) {
+				std::lock_guard<std::recursive_mutex> locker(MEMGC::m_lock);
+				if (MEMGC::a_instance.load() != nullptr) {
+					delete MEMGC::a_instance.load();
+					MEMGC::a_instance.store(nullptr);
 				}
 			}
 		}
 	};
 public:
-	static _GC* getInstance();
-	~_GC();
+	static MEMGC* getInstance();
+	~MEMGC();
 };
-std::recursive_mutex _GC::m_lock;
-volatile std::atomic<_GC*> _GC::a_instance;
-_GC* _GC::getInstance()
+std::recursive_mutex MEMGC::m_lock;
+volatile std::atomic<MEMGC*> MEMGC::a_instance;
+std::once_flag MEMGC::flag;
+MEMGC* MEMGC::getInstance()
 {
 	static _GC_C gcc;
-	_GC* tmp = nullptr;
-	if(_GC::a_instance.load()==nullptr)
-		_GC::a_instance.compare_exchange_strong(tmp, new _GC());
-	return _GC::a_instance.load();
+	std::call_once(MEMGC::flag,MEMGC::initInst);
+	return MEMGC::a_instance.load();
 }
-_GC::~_GC()
+MEMGC::~MEMGC()
 {
-	std::lock_guard<std::recursive_mutex> locker(_GC::m_lock);
+	std::lock_guard<std::recursive_mutex> locker(MEMGC::m_lock);
 	for (auto& e : this->ptr_array)
 	{
 		if (e.first == 1) delete e.second;
 		else if (e.first == 2) delete[] e.second;
 		e.second = nullptr;
 	}
+}
+
+void MEMGC::initInst()
+{
+	MEMGC* tmp = nullptr;
+	MEMGC::a_instance.compare_exchange_strong(tmp, new MEMGC());
 }
 
 template<class T, class... Args>
@@ -75,8 +83,8 @@ auto* alloc(Args... args)
 		ptr_pair.first = 1;
 	}
 	ptr_pair.second = ptr;
-	std::lock_guard<std::recursive_mutex> locker(_GC::m_lock);
-	_GC::getInstance()->ptr_array.push_back(ptr_pair);
+	std::lock_guard<std::recursive_mutex> locker(MEMGC::m_lock);
+	MEMGC::getInstance()->ptr_array.push_back(ptr_pair);
 	return ptr;
 }
 #endif
