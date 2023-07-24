@@ -7,7 +7,7 @@ int main()
 	for (int i = 0; i < 10; ++i)
 		arr[i] = i + 1;		  //add 1 ~ 100 to the array
 
-	for (int j = 0; j < 100; ++j)
+	for (int j = 0; j < 10; ++j)
 		std::cout << arr[j] << " ";	  //print array
 	std::cout << std::endl;
 	
