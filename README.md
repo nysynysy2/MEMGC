@@ -14,7 +14,7 @@ this function will return a pointer to the memory that allocated, and also autom
 
 tips: don't worry about the array, the MEMGC will automaticly detect whether the address is an array or not.
 
-3,now you can use the pointer just like a regular one, MEMGC will free the memory automaticly.
+3,now you can use the pointer just like a regular one, MEMGC will free the memory after.
 
 Sample:
 
