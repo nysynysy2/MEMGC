@@ -1,4 +1,3 @@
-#pragma once
 #ifndef _GARBAGE_COLLECTOR_
 #define _GARBAGE_COLLECTOR_
 #include <cstdlib>
