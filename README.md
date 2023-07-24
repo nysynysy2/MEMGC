@@ -1,7 +1,9 @@
 # MEMGC
-Simple thread safe C++ garbage collector
+Simple thread safe cross-platform C++ garbage collector
 
 It's a garbage collector that will free memory that allocated.
+
+it's available on both Windows and Linux
 
 How to use:
 
