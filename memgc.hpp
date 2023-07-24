@@ -15,7 +15,7 @@ class _GC
 	explicit _GC() = default;
 	explicit _GC(const _GC&) = delete;
 	static std::recursive_mutex m_lock;
-	static std::atomic<_GC*> a_instance;
+	static volatile std::atomic<_GC*> a_instance;
 	class _GC_C
 	{
 		friend class _GC;
@@ -36,7 +36,7 @@ public:
 	~_GC();
 };
 std::recursive_mutex _GC::m_lock;
-std::atomic<_GC*> _GC::a_instance;
+volatile std::atomic<_GC*> _GC::a_instance;
 _GC* _GC::getInstance()
 {
 	static _GC_C gcc;
